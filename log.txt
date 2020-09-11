@@ -1,0 +1,123 @@
+
+
+Installing vim, tmux, and htop
+
+:: Synchronizing package databases...
+downloading core.db...
+downloading extra.db...
+downloading community.db...
+resolving dependencies...
+looking for conflicting packages...
+
+Packages (4) htop-3.0.1-2  rsync-3.2.3-1  tmux-3.1_b-1  vim-8.2.1634-1
+
+Total Installed Size:  5.21 MiB
+Net Upgrade Size:      0.00 MiB
+
+:: Proceed with installation? [Y/n] 
+checking keyring...
+checking package integrity...
+loading package files...
+checking for file conflicts...
+checking available disk space...
+:: Processing package changes...
+reinstalling tmux...
+reinstalling vim...
+reinstalling htop...
+reinstalling rsync...
+:: Running post-transaction hooks...
+(1/2) Reloading system manager configuration...
+(2/2) Arming ConditionNeedsUpdate...
+[H[J[3J
+
+Configuring git
+
+[H[J[3J
+
+syncing user configuration files
+
+[H[J[3J
+
+Making ~/Code direcotry
+
+[H[J[3J
+
+Moving ~/DarlingArch to ~/Code/DarlingArch
+
+
+\Moving back into home directory:
+
+[H[J[3J
+
+Current directory:
+
+/root
+
+
+.
+..
+.automated_script.sh
+.autorsync
+.bash_aliases
+.bash_logout
+.bash_profile
+.bashrc
+.cache
+Code
+.config
+darlingarch_post_chroot.sh
+darlingarch.sh
+.gitconfig
+pacstrap.dap
+.screenrc
+.tmux.conf
+.viminfo
+.vimrc
+.zcompdump
+.zdirs
+.zlogin
+.zsh_history
+.zshrc
+[H[J[3J
+
+/root/.config/htop dirctory listing:
+
+.
+..
+htoprc
+[H[J[3J
+
+Loading user configuration settings:
+
+
+
+Backing up .autorsync
+
+
+
+Backing up .vimrc
+
+
+
+Backing up .bash_profile
+
+
+
+Backing up .bash_aliases
+
+
+
+Backing up .bashrc
+
+
+
+Backing up .tmux.conf
+
+
+
+Backing up .htoprc
+
+[H[J[3J
+
+Done
+

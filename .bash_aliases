@@ -1,6 +1,5 @@
 alias gst="git status"
 alias c="clear"
-alias dshells="cd ~/Code/DarlingShells && pwd"
 alias editAliases="vim ~/.bash_aliases && source ~/.bash_aliases"
 alias gdf="git diff --color"
 alias tns="tmux new -s Arch"
