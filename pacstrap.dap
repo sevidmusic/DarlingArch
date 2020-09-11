@@ -1,0 +1,14 @@
+base
+base-devel
+linux
+linux-headers
+linux-firmware
+linux-lts
+linux-lts-headers
+networkmanager
+vim
+tmux
+git
+bmon
+
+

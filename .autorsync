@@ -1,0 +1,22 @@
+printf "\n\nBacking up .autorsync\n\n"
+rsync -c ~/.autorsync ~/Code/DarlingShells/.autorsync
+
+printf "\n\nBacking up .vimrc\n\n"
+rsync -c ~/.vimrc ~/Code/DarlingShells/.vimrc
+
+printf "\n\nBacking up .bash_profile\n\n"
+rsync -c ~/.bash_profile ~/Code/DarlingShells/.bash_profile
+
+printf "\n\nBacking up .bash_aliases\n\n"
+rsync -c ~/.bash_aliases ~/Code/DarlingShells/.bash_aliases
+
+printf "\n\nBacking up .bashrc\n\n"
+rsync -c ~/.bashrc ~/Code/DarlingShells/.bashrc
+
+printf "\n\nBacking up .tmux.conf\n\n"
+rsync -c ~/.tmux.conf ~/Code/DarlingShells/.tmux.conf
+
+printf "\n\nBacking up .htoprc\n\n"
+rsync -c ~/.config/htop/htoprc ~/Code/DarlingShells/htoprc
+
+
