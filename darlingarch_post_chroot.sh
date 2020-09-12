@@ -172,7 +172,7 @@ showWelcomeMessage()
 {
     showBanner "Welcome to ${DISTRO}${BANNER_MSG_COLOR}"
     notifyUser "If your running this script it is assumed that you successflly performed the ${DISTRO}${NOTIFYCOLOR} installation and succesfully used ${HIGHLIGHTCOLOR}arch-chroot${NOTIFYCOLOR} to login to the new installation as root." 0 'dontClear'
-    notifyUser "This script will perform the necessary post installation steps. Once it is complete you should be able to poweroff the computer, remove the installation media, reboot, and begin enjoying your new ${DISTRO}${NOTIFYCOLOR} installation." 0 'dontClear'
+    notifyUser "This script will perform the necessary post installation steps. Once it is complete you should be able to poweroff the computer, remove the installation media, reboot, and begin enjoying your new ${DISTRO}${NOTIFYCOLOR} installation." 3 'dontClear'
 }
 
 showHelpMsg()
@@ -216,8 +216,8 @@ configureNetwork()
     showBanner ""
     [[ -f ~/.cache/.installer_network_configured ]] && notifyUser "" && return
     notifyUser "Setting up network" 0 'dontClear'
-    notifyUser "Plese enter the name you wish to assign to you computer, i.e. the hostname:"
-    read -p "Desired hostname (${WARNINGCOLOR}all lowercase, no spaces${NOTIFYCOLOR}): " HOST_NAME
+    notifyUser "Plese enter the name you wish to assign to you computer, i.e. the hostname:" 0 'dontClear'
+    read -p "Desired hostname (${WARNINGCOLOR}alphanumeric, all lowercase, no spaces${NOTIFYCOLOR}): " HOST_NAME
     echo "${HOST_NAME}" >> /etc/hostname
     echo "127.0.0.1        localhost" >> /etc/hosts
     echo "::1              localhost" >> /etc/hosts
@@ -226,7 +226,7 @@ configureNetwork()
     sleep 3
     notifyUser "Enabling NetworkManager" 0 'dontClear'
     systemctl enable NetworkManager
-    showLoadingBar ""
+    showLoadingBar "Network is configured, and NetworkManager is enabled, moving on"
     printf "" >> ~/.cache/.installer_network_configured
 }
 
@@ -246,7 +246,8 @@ configureGrub()
     [[ -f ~/.cache/.installer_grub ]] && notifyUser "Grub was already installed and configured on: ${HIGHLIGHTCOLOR}$(cat ~/.cache/.installer_grub)" && return
     notifyUser "Setting up ${HIGHLIGHTCOLOR}grub${NOTIFYCOLOR} bootloader" 0 'dontClear'
     pacman -S grub
-    notifyUser "Please enter the name of the disk ${DISTRO}${NOTIFYCOLOR} is being installed on. (e.g., ${HIGHLIGHTCOLOR}sdb${NOTIFYCOLOR})"
+    showBanner "Configure Grub | Enter Disk Name | ${HIGHLIGHTCOLOR}User input required"
+    notifyUser "Please enter the name of the disk ${DISTRO}${NOTIFYCOLOR} is being installed on. (e.g., ${HIGHLIGHTCOLOR}sdb${NOTIFYCOLOR})" 0 'dontClear'
     read -p "Disk name (e.g., ${HIGHLIGHTCOLOR}sdb${CLEAR_ALL_TEXT_STYLES}): " DISK_NAME
     grub-install -v --target=i386-pc "/dev/${DISK_NAME}"
     grub-mkconfig -o /boot/grub/grub.cfg
@@ -295,5 +296,5 @@ showLoadingBar "Finishing up"
 
 showBanner "Finishing up"
 
-notifyUserAndExit "If no errors occured, then you can safely ${HIGHLIGHTCOLOR}exit${NOTIFYCOLOR}, ${HIGHLIGHTCOLOR}umount ${DISK_NAME:-DISKNAME}${NOTIFYCOLOR}, ${HIGHLIGHTCOLOR}poweroff${NOTIFYCOLOR} the computer, ${HIGHLIGHTCOLOR}remove the installation media${NOTIFYCOLOR}, and reboot into your new ${DISTRO}${NOTIFYCOLOR} installation." 0
+notifyUserAndExit "If no errors occured, then you can safely ${HIGHLIGHTCOLOR}exit${NOTIFYCOLOR}, ${HIGHLIGHTCOLOR}umount ${DISK_NAME:-DISKNAME}${NOTIFYCOLOR}, ${HIGHLIGHTCOLOR}poweroff${NOTIFYCOLOR} the computer, ${HIGHLIGHTCOLOR}remove the installation media${NOTIFYCOLOR}, and reboot into your new ${DISTRO}${NOTIFYCOLOR} installation." 5
 
