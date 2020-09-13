@@ -10,5 +10,7 @@ vim
 tmux
 git
 bmon
+neofetch
+rsync
 
 

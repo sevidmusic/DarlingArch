@@ -170,7 +170,8 @@ showFlagInfo()
 
 showWelcomeMessage()
 {
-    showBanner "Welcome to ${DISTRO}${BANNER_MSG_COLOR}"
+    [[ "$(command -v neofetch | wc -l)" -gt 0 ]] || showBanner "Welcome to ${DISTRO}${BANNER_MSG_COLOR}"
+    [[ "$(command -v neofetch | wc -l)" -gt 0 ]] && neofetch && notifyUser "Welcome to ${DISTRO}${BANNER_MSG_COLOR}" 0 'dontClear'
     notifyUser "If your running this script it is assumed that you successflly performed the ${DISTRO}${NOTIFYCOLOR} installation and succesfully used ${HIGHLIGHTCOLOR}arch-chroot${NOTIFYCOLOR} to login to the new installation as root." 0 'dontClear'
     notifyUser "This script will perform the necessary post installation steps. Once it is complete you should be able to ${HIGHLIGHTCOLOR}exit${NOTIFYCOLOR} out of the new installation, ${HIGHLIGHTCOLOR}unmount${NOTIFYCOLOR} the new installation, ${HIGHLIGHTCOLOR}poweroff${NOTIFYCOLOR} the computer, ${HIGHLIGHTCOLOR}remove the installation media${NOTIFYCOLOR}, ${HIGHLIGHTCOLOR}turn the computer back on${NOTIFYCOLOR}, and begin enjoying your new ${DISTRO}${NOTIFYCOLOR} installation." 3 'dontClear'
 }
