@@ -172,7 +172,7 @@ showWelcomeMessage()
 {
     showBanner "Welcome to ${DISTRO}${BANNER_MSG_COLOR}"
     notifyUser "If your running this script it is assumed that you successflly performed the ${DISTRO}${NOTIFYCOLOR} installation and succesfully used ${HIGHLIGHTCOLOR}arch-chroot${NOTIFYCOLOR} to login to the new installation as root." 0 'dontClear'
-    notifyUser "This script will perform the necessary post installation steps. Once it is complete you should be able to poweroff the computer, remove the installation media, reboot, and begin enjoying your new ${DISTRO}${NOTIFYCOLOR} installation." 3 'dontClear'
+    notifyUser "This script will perform the necessary post installation steps. Once it is complete you should be able to ${HIGHLIGHTCOLOR}exit${NOTIFYCOLOR} out of the new installation, ${HIGHLIGHTCOLOR}unmount${NOTIFYCOLOR} the new installation, ${HIGHLIGHTCOLOR}poweroff${NOTIFYCOLOR} the computer, ${HIGHLIGHTCOLOR}remove the installation media${NOTIFYCOLOR}, ${HIGHLIGHTCOLOR}turn the computer back on${NOTIFYCOLOR}, and begin enjoying your new ${DISTRO}${NOTIFYCOLOR} installation." 3 'dontClear'
 }
 
 showHelpMsg()
@@ -190,12 +190,12 @@ showHelpMsg()
 configureTime()
 {
     showBanner "${SCRIPTNAME}${BANNER_MSG_COLOR}: Configure Time"
-    [[ -f ~/.cache/.config_time ]] && notifyUser "Time is aleady configured." && return
+    [[ -f ~/.cache/.config_time ]] && notifyUser "Time was aleady configured." && return
     notifyUser "Setting timezone" 0 'dontClear'
     ln -sf /usr/share/zoneinfo/America/New_York /etc/localtime
     notifyUser "Syncing hardware clock" 0 'dontClear'
     hwclock --systohc
-    showLoadingBar "Time was already configured, moving on."
+    showLoadingBar "Time is configured, moving on."
     printf "time_already_configured" >> ~/.cache/.config_time
 }
 
@@ -213,10 +213,11 @@ configureLocale()
 
 configureNetwork()
 {
-    showBanner ""
-    [[ -f ~/.cache/.installer_network_configured ]] && notifyUser "" && return
+    showBanner "Network Configuration | ${HIGHLIGHTCOLOR}User Input Required"
+    [[ -f ~/.cache/.installer_network_configured ]] && notifyUser "Network was already configured." && return
     notifyUser "Setting up network" 0 'dontClear'
     notifyUser "Plese enter the name you wish to assign to you computer, i.e. the hostname:" 0 'dontClear'
+    notifyUser "${WARNINGCOLOR}The hostname MUST be alphanumeric, all lowercase, and contain no spaces, ${SCRIPTNAME}${WARNINGCOLOR} does not validate your input, get this right or your Network configuration will be invalid!"
     read -p "Desired hostname (${WARNINGCOLOR}alphanumeric, all lowercase, no spaces${NOTIFYCOLOR}): " HOST_NAME
     echo "${HOST_NAME}" >> /etc/hostname
     echo "127.0.0.1        localhost" >> /etc/hosts
@@ -240,14 +241,35 @@ configureRootPassword()
     printf "" >> ~/.cache/.installer_root_pwd
 }
 
+showDiskListing()
+{
+    fdisk -l | grep 'dev' | awk "/dev.*/{i++}i==${1}{print; exit}"
+}
+
+showDiskInfo()
+{
+    local _sdi_limit _sdi_inc _sdi_listing
+    _sdi_limit="$(fdisk -l | grep 'dev' | wc -l)"
+    _sdi_inc=1
+    notifyUser "The following is an overview of the available disks, and their respective partitions." 0 'dontClear'
+    while [[ "${_sdi_inc}" -le "${_sdi_limit}" ]]
+    do
+        _sdi_listing="$(showDiskListing $_sdi_inc)"
+        notifyUser "${_sdi_listing/Disk/${HIGHLIGHTCOLOR}Disk}" 0 'dontClear'
+        _sdi_inc=$(( $_sdi_inc + 1 ))
+    done
+    sleep 5
+}
+
 configureGrub()
 {
     showBanner "Install and configure ${HIGHLIGHTCOLOR}grub"
     [[ -f ~/.cache/.installer_grub ]] && notifyUser "Grub was already installed and configured on: ${HIGHLIGHTCOLOR}$(cat ~/.cache/.installer_grub)" && return
     notifyUser "Setting up ${HIGHLIGHTCOLOR}grub${NOTIFYCOLOR} bootloader" 0 'dontClear'
-    pacman -S grub
+    pacman -S grub --noconfirm
     showBanner "Configure Grub | Enter Disk Name | ${HIGHLIGHTCOLOR}User input required"
     notifyUser "Please enter the name of the disk ${DISTRO}${NOTIFYCOLOR} is being installed on. (e.g., ${HIGHLIGHTCOLOR}sdb${NOTIFYCOLOR})" 0 'dontClear'
+    showDiskInfo
     read -p "Disk name (e.g., ${HIGHLIGHTCOLOR}sdb${CLEAR_ALL_TEXT_STYLES}): " DISK_NAME
     grub-install -v --target=i386-pc "/dev/${DISK_NAME}"
     grub-mkconfig -o /boot/grub/grub.cfg
