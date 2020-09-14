@@ -220,10 +220,15 @@ configureNetwork()
     notifyUser "Plese enter the name you wish to assign to you computer, i.e. the hostname:" 0 'dontClear'
     notifyUser "${WARNINGCOLOR}The hostname MUST be alphanumeric, all lowercase, and contain no spaces, ${SCRIPTNAME}${WARNINGCOLOR} does not validate your input, get this right or your Network configuration will be invalid!" 0 'dontClear'
     read -p "Desired hostname (${WARNINGCOLOR}alphanumeric, all lowercase, no spaces${NOTIFYCOLOR}): " HOST_NAME
+    [[ -f /etc/hostname ]] && notifyUser "Deleteing old /etc/hostname file" 0 'dontClear' && rm /etc/hostname
+    [[ -f /etc/hosts ]] && notifyUser "Deleteing old /etc/hosts file" 0 'dontClear' && rm /etc/hosts
     echo "${HOST_NAME}" >> /etc/hostname
     echo "127.0.0.1        localhost" >> /etc/hosts
     echo "::1              localhost" >> /etc/hosts
     echo "127.0.1.1        ${HOST_NAME}.localdomain ${HOST_NAME}" >> /etc/hosts
+    notifyUser "Current /etc/hostname file:" 0 'dontClear'
+    cat /etc/hostname
+    notifyUser "Current /etc/hosts file:" 0 'dontClear'
     cat /etc/hosts
     sleep 3
     notifyUser "Enabling NetworkManager" 0 'dontClear'
@@ -281,22 +286,25 @@ configureGrub()
 
 configureUser()
 {
-    showBanner "Configure User"
-    [[ -f ~/.cache/darlingarch/.installer_user ]] && notifyUser "$(cat ~/.cache/darlingarch/.installer_user)'s account was already configured. Additional changes will need to be made manually." && return
+    [[ -f ~/.cache/darlingarch/.installer_user ]] && showBanner "Configure User" && notifyUser "$(cat ~/.cache/darlingarch/.installer_user)'s account was already configured. Additional changes will need to be made manually." && return
     notifyUser "" 0 'dontClear'
     showBanner "Configure User | ${HIGHLIGHTCOLOR}User input required"
     notifyUser "Please enter a username:" 0 'dontClear'
     read -p "Desired user name: " USER_NAME
+    showLoadingBar "Creating new user"
     useradd -m -U -G wheel,audio,video,optical,storage -s /bin/bash "${USER_NAME}"
+    showBanner "Configure User | Set new user's password | ${HIGHLIGHTCOLOR}User Input Required"
     notifyUser "Please set a password for the new user:" 0 'dontClear'
     passwd "${USER_NAME}"
-    showBanner "Configure User | Install sudo"
-    pacman -S sudo
+    showLoadingBar "Password was set for new user, moving on"
+    showBanner "Configure User | Install and configure sudo"
+    pacman -S sudo --noconfirm
     showLoadingBar "${HIGHLIGHTCOLOR}sudo${CLEAR_ALL_TEXT_STYLES} is installed, moving on"
-    showBanner "Configure User | Enable sudo by wheel group memebers"
+    showBanner "Configure User | Install and configure sudo"
     showLoadingBar "Enableing members of the wheel group to use sudo"
     sed -i 's/# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/g' /etc/sudoers
-    showLoadingBar "User ${USER_NAME} was configured, to make additional changes us ${HIGHLIGHTCOLOR}visudo${CLEAR_ALL_TEXT_STYLES}, moving on"
+    showBanner "Configure User | Done"
+    showLoadingBar "New user ${USER_NAME} was created, and given sudo privleges, additional changes will need to be made manually, moving on"
     printf "${USER_NAME}" >> ~/.cache/darlingarch/.installer_user
 }
 
