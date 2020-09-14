@@ -68,6 +68,12 @@ initTextStyles() {
   BANNER_MSG_COLOR="${CLEAR_ALL_TEXT_STYLES}${GREEN_BG_COLOR}${BLINK_TEXT_ON}${BLACK_FG_COLOR}"
 }
 
+initVars()
+{
+    DEFAULT_PACKAGE_FILE="$(pwd)/pacstrap.dap"
+    PACKAGE_FILE="${DEFAULT_PACKAGE_FILE}"
+}
+
 animatedPrint()
 {
   local _charsToAnimate _speed _currentChar _charCount
@@ -398,8 +404,9 @@ performPreInsallation() {
 
 showPacstrapFailedMsg()
 {
-    notifyUser "${HIGHLIGHTCOLOR}pacstrap${WARNINGCOLOR} failed to perform installation." 0 'dontClear'
-    notifyUser "Make sure you have a ${HIGHLIGHTCOLOR}~/pacstrap.dap${WARNINGCOLOR} file with at least the following packages specified:" 0 'dontClear'
+    notifyUser "${WARNINGCOLOR}Installation cannot be performed, package file ${HIGHLIGHTCOLOR}${WARNINGCOLOR} either does not exist, or is not properly implemented!" 0 'dontClear'
+    notifyUser "Make sure that ${HIGHLIGHTCOLOR}${PACKAGE_FILE} exists, and is properly implemented." 0 'dontClear'
+    notifyUser "The following is an example of a properly implemented packge file:" 0 'dontClear'
     notifyUser "${HIGHLIGHTCOLOR}base${WARNINGCOLOR}" 0 'dontClear'
     notifyUser "${HIGHLIGHTCOLOR}base-devel${WARNINGCOLOR}" 0 'dontClear'
     notifyUser "${HIGHLIGHTCOLOR}linux${WARNINGCOLOR}" 0 'dontClear'
@@ -408,19 +415,22 @@ showPacstrapFailedMsg()
     notifyUser "${HIGHLIGHTCOLOR}linux-lts${WARNINGCOLOR}" 0 'dontClear'
     notifyUser "${HIGHLIGHTCOLOR}linux-lts-headers${WARNINGCOLOR}" 0 'dontClear'
     notifyUser "${HIGHLIGHTCOLOR}networkmanager${WARNINGCOLOR}" 0 'dontClear'
-    notifyUserAndExit "Also, please make sure each package is specified on it's own line in ${HIGHLIGHTCOLOR}~/pacstrap.dap"
+    notifyUser "${HIGHLIGHTCOLOR}sudo${WARNINGCOLOR}" 0 'dontClear'
+    notifyUser "${HIGHLIGHTCOLOR}vim${WARNINGCOLOR}" 0 'dontClear'
+    notifyUser "${HIGHLIGHTCOLOR}man${WARNINGCOLOR}" 0 'dontClear'
+    notifyUserAndExit "Also, please make sure ${HIGHLIGHTCOLOR}each package${NOTIFYCOLOR} is specified ${HIGHLIGHTCOLOR}on it's own line${NOTIFYCOLOR} in ${HIGHLIGHTCOLOR}${PACKAGE_FILE}" 0 'dontClear' 1
 }
 
 validatePacstrapDapFile()
 {
-    grep -Fxq 'base' ~/pacstrap.dap || showPacstrapFailedMsg
-    grep -Fxq 'base-devel' ~/pacstrap.dap || showPacstrapFailedMsg
-    grep -Fxq 'linux' ~/pacstrap.dap || showPacstrapFailedMsg
-    grep -Fxq 'linux-headers' ~/pacstrap.dap || showPacstrapFailedMsg
-    grep -Fxq 'linux-firmware' ~/pacstrap.dap || showPacstrapFailedMsg
-    grep -Fxq 'linux-lts' ~/pacstrap.dap || showPacstrapFailedMsg
-    grep -Fxq 'linux-lts-headers' ~/pacstrap.dap || showPacstrapFailedMsg
-    grep -Fxq 'networkmanager' ~/pacstrap.dap || showPacstrapFailedMsg
+    grep -Fxq 'base' "${PACKAGE_FILE}" || showPacstrapFailedMsg
+    grep -Fxq 'base-devel' "${PACKAGE_FILE}" || showPacstrapFailedMsg
+    grep -Fxq 'linux' "${PACKAGE_FILE}" || showPacstrapFailedMsg
+    grep -Fxq 'linux-headers' "${PACKAGE_FILE}" || showPacstrapFailedMsg
+    grep -Fxq 'linux-firmware' "${PACKAGE_FILE}" || showPacstrapFailedMsg
+    grep -Fxq 'linux-lts' "${PACKAGE_FILE}" || showPacstrapFailedMsg
+    grep -Fxq 'linux-lts-headers' "${PACKAGE_FILE}" || showPacstrapFailedMsg
+    grep -Fxq 'networkmanager' "${PACKAGE_FILE}" || showPacstrapFailedMsg
 }
 
 runPacstrap()
@@ -429,7 +439,7 @@ runPacstrap()
     [[ -f ~/.cache/.installer_pacstrap_already_run ]] && notifyUser "${HIGHLIGHTCOLOR}pacstrap${NOTIFYCOLOR} already ran." && return
     notifyUser "${WARNINGCOLOR}--    This may take awhile, DO NOT QUIT TILL THIS STEP IS COMPLETE    --" 0 'dontClear'
     validatePacstrapDapFile
-    pacstrap /mnt $(< pacstrap.dap) || showPacstrapFailedMsg
+    pacstrap /mnt $(< "${PACKAGE_FILE}") || showPacstrapFailedMsg
     notifyUser "${HIGHLIGHTCOLOR}pacstrap${NOTIFYCOLOR} ran successfully, to install additional packages, use ${HIGHLIGHTCOLOR}pacman -S PACKAGE_NAME${NOTIFYCOLOR} once logged into the new Arch installation." 0 'dontClear'
     showLoadingBar "${HIGHLIGHTCOLOR}pacstrap${NOTIFYCOLOR} already ran, moving on"
     printf "pacstrap_already_ran_use_pacman_to_install_additional_packages_make_sure_your_logged_into_new_installation_via_arch_chroot" >> ~/.cache/.installer_pacstrap_already_run
@@ -511,9 +521,10 @@ showHelpMsg()
 clear
 initTextStyles
 initMessages
+initVars
 # For a great article on getopts, and other approaches to handling bash arguments:
 # @see https://wiki.bash-hackers.org/howto/getopts_tutorial
-while getopts ":Cslh" OPTION; do
+while getopts ":Cslp:h" OPTION; do
   case "${OPTION}" in
   C)
       CONTINUE="dontExit"
@@ -526,6 +537,16 @@ while getopts ":Cslh" OPTION; do
       cat ~/.cache/.installer_msg_log | more
       exitOrContinue 0 "forceExit"
     ;;
+  p)
+      showBanner "Confirm Package File | ${HIGHLIGHTCOLOR}User Input Required"
+      notifyUser "You specified ${OPTARG} as the package file:" 0 'dontClear'
+      notifyUser "${WARNINGCOLOR}Get this right, specifying the wrong file may cause installation to fail! If you are unsure about this, dont use the ${HIGHLIGHTCOLOR}-p${WARNINGCOLOR} flag!" 0 'dontClear'
+      printf "\n"
+      read -p "Is this correct? (Enter ${HIGHLIGHTCOLOR}Y${CLEAR_ALL_TEXT_STYLES} to continue, any other key to exit): " USER_VERIFIED_PACKAGE_FILE
+      [[ "${USER_VERIFIED_PACKAGE_FILE}" == 'Y' ]] || notifyUserAndExit "Please re-run ${SCRIPTNAME}${NOTIFYCOLOR}, either with or without the ${HIGHLIGHTCOLOR}-p${NOTIFYCOLOR} flag. For help use ${SCRIPTNAME}${HIGHLIGHTCOLOR} -h${NOTIFYCOLOR}" 0 'dontClear' 1
+      PACKAGE_FILE="${OPTARG}"
+      validatePacstrapDapFile
+    ;;
   h)
       showBanner "Help"
       showHelpMsg
@@ -537,6 +558,12 @@ while getopts ":Cslh" OPTION; do
     ;;
   \?)
      animatedPrint "Invalid argument: -${OPTARG}" && exitOrContinue 1 "forceExit"
+    ;;
+  :)
+      showBanner "${WARNINGCOLOR}Error | Invalid flag use"
+      notifyUser "${WARNINGCOLOR}The ${HIGHLIGHTCOLOR}-${OPTARG}${WARNINGCOLOR} expects an argument!" 2 'dontClear'
+      showFlagInfo
+      notifyUserAndExit "Please re-run ${SCRIPTNAME}${NOTIFYCOLOR} with correct syntax. Use ${SCRIPTNAME}${HIGHLIGHTCOLOR} -h${NOTIFYCOLOR} to view help info" 0 'dontClear' 1
     ;;
   esac
 done
