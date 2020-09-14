@@ -120,7 +120,7 @@ notifyUser()
     sleep ${2:-2}
     [[ "${3}" == "dontClear" ]] || clear
     printf "${CLEAR_ALL_TEXT_STYLES}\n"
-    printf "\n%s%s%s\n" "${NOTIFYCOLOR}" "${1}" "${CLEAR_ALL_TEXT_STYLES}" >> ~/.cache/.installer_msg_log
+    printf "\n%s%s%s\n" "${NOTIFYCOLOR}" "${1}" "${CLEAR_ALL_TEXT_STYLES}" >> ~/.cache/darlingarch/.installer_msg_log
 }
 
 notifyUserAndExit()
@@ -191,34 +191,34 @@ showHelpMsg()
 configureTime()
 {
     showBanner "${SCRIPTNAME}${BANNER_MSG_COLOR}: Configure Time"
-    [[ -f ~/.cache/.config_time ]] && notifyUser "Time was aleady configured." && return
+    [[ -f ~/.cache/darlingarch/.config_time ]] && notifyUser "Time was aleady configured." && return
     notifyUser "Setting timezone" 0 'dontClear'
     ln -sf /usr/share/zoneinfo/America/New_York /etc/localtime
     notifyUser "Syncing hardware clock" 0 'dontClear'
     hwclock --systohc
     showLoadingBar "Time is configured, moving on."
-    printf "time_already_configured" >> ~/.cache/.config_time
+    printf "time_already_configured" >> ~/.cache/darlingarch/.config_time
 }
 
 configureLocale()
 {
     showBanner "Localization"
-    [[ -f ~/.cache/.installer_locale ]] && notifyUser "Localization was already configured." && return
+    [[ -f ~/.cache/darlingarch/.installer_locale ]] && notifyUser "Localization was already configured." && return
     notifyUser "Setting up localization" 0 'dontClear'
     sed -i 's/#en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/g' /etc/locale.gen
     locale-gen
     echo "LANG=en_US.UTF-8" >> /etc/locale.conf
     showLoadingBar "Localization was configured, moving on"
-    printf "" >> ~/.cache/.installer_locale
+    printf "" >> ~/.cache/darlingarch/.installer_locale
 }
 
 configureNetwork()
 {
     showBanner "Network Configuration | ${HIGHLIGHTCOLOR}User Input Required"
-    [[ -f ~/.cache/.installer_network_configured ]] && notifyUser "Network was already configured." && return
+    [[ -f ~/.cache/darlingarch/.installer_network_configured ]] && notifyUser "Network was already configured." && return
     notifyUser "Setting up network" 0 'dontClear'
     notifyUser "Plese enter the name you wish to assign to you computer, i.e. the hostname:" 0 'dontClear'
-    notifyUser "${WARNINGCOLOR}The hostname MUST be alphanumeric, all lowercase, and contain no spaces, ${SCRIPTNAME}${WARNINGCOLOR} does not validate your input, get this right or your Network configuration will be invalid!"
+    notifyUser "${WARNINGCOLOR}The hostname MUST be alphanumeric, all lowercase, and contain no spaces, ${SCRIPTNAME}${WARNINGCOLOR} does not validate your input, get this right or your Network configuration will be invalid!" 0 'dontClear'
     read -p "Desired hostname (${WARNINGCOLOR}alphanumeric, all lowercase, no spaces${NOTIFYCOLOR}): " HOST_NAME
     echo "${HOST_NAME}" >> /etc/hostname
     echo "127.0.0.1        localhost" >> /etc/hosts
@@ -229,17 +229,17 @@ configureNetwork()
     notifyUser "Enabling NetworkManager" 0 'dontClear'
     systemctl enable NetworkManager
     showLoadingBar "Network is configured, and NetworkManager is enabled, moving on"
-    printf "" >> ~/.cache/.installer_network_configured
+    printf "" >> ~/.cache/darlingarch/.installer_network_configured
 }
 
 configureRootPassword()
 {
     showBanner "Set ${HIGHLIGHTCOLOR}root${BANNER_MSG_COLOR} password"
-    [[ -f ~/.cache/.installer_root_pwd ]] && notifyUser "Root password was already set, to reset run: ${HIGHLIGHTCOLOR}passwd" && return
+    [[ -f ~/.cache/darlingarch/.installer_root_pwd ]] && notifyUser "Root password was already set, to reset run: ${HIGHLIGHTCOLOR}passwd" && return
     notifyUser "Setting root password" 0 'dontClear'
     passwd
     showLoadingBar "Root password was set, moving on"
-    printf "" >> ~/.cache/.installer_root_pwd
+    printf "" >> ~/.cache/darlingarch/.installer_root_pwd
 }
 
 showDiskListing()
@@ -265,7 +265,7 @@ showDiskInfo()
 configureGrub()
 {
     showBanner "Install and configure ${HIGHLIGHTCOLOR}grub"
-    [[ -f ~/.cache/.installer_grub ]] && notifyUser "Grub was already installed and configured on: ${HIGHLIGHTCOLOR}$(cat ~/.cache/.installer_grub)" && return
+    [[ -f ~/.cache/darlingarch/.installer_grub ]] && notifyUser "Grub was already installed and configured on: ${HIGHLIGHTCOLOR}$(cat ~/.cache/darlingarch/.installer_grub)" && return
     notifyUser "Setting up ${HIGHLIGHTCOLOR}grub${NOTIFYCOLOR} bootloader" 0 'dontClear'
     pacman -S grub --noconfirm
     showBanner "Configure Grub | Enter Disk Name | ${HIGHLIGHTCOLOR}User input required"
@@ -275,10 +275,35 @@ configureGrub()
     grub-install -v --target=i386-pc "/dev/${DISK_NAME}"
     grub-mkconfig -o /boot/grub/grub.cfg
     showLoadingBar "Grub was installed and configured on ${HIGHLIGHTCOLOR}${DISK_NAME}${NOTIFYCOLOR}, moving on"
-    printf "${DISK_NAME}" >> ~/.cache/.installer_grub
+    printf "${DISK_NAME}" >> ~/.cache/darlingarch/.installer_grub
 }
 
+
+configureUser()
+{
+    showBanner "Configure User"
+    [[ -f ~/.cache/darlingarch/.installer_user ]] && notifyUser "$(cat ~/.cache/darlingarch/.installer_user)'s account was already configured. Additional changes will need to be made manually." && return
+    notifyUser "" 0 'dontClear'
+    showBanner "Configure User | ${HIGHLIGHTCOLOR}User input required"
+    notifyUser "Please enter a username:" 0 'dontClear'
+    read -p "Desired user name: " USER_NAME
+    useradd -m -U -G wheel,audio,video,optical,storage -s /bin/bash "${USER_NAME}"
+    notifyUser "Please set a password for the new user:" 0 'dontClear'
+    passwd "${USER_NAME}"
+    showBanner "Configure User | Install sudo"
+    pacman -S sudo
+    showLoadingBar "${HIGHLIGHTCOLOR}sudo${CLEAR_ALL_TEXT_STYLES} is installed, moving on"
+    showBanner "Configure User | Enable sudo by wheel group memebers"
+    showLoadingBar "Enableing members of the wheel group to use sudo"
+    sed -i 's/# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/g' /etc/sudoers
+    showLoadingBar "User ${USER_NAME} was configured, to make additional changes us ${HIGHLIGHTCOLOR}visudo${CLEAR_ALL_TEXT_STYLES}, moving on"
+    printf "${USER_NAME}" >> ~/.cache/darlingarch/.installer_user
+}
+
+
 ########################## PROGRAM #######################
+[[ -d ~/.cache/darlingarch ]] || mkdir -p ~/.cache/darlingarch
+
 
 clear
 initTextStyles
@@ -288,8 +313,8 @@ initMessages
 while getopts ":lh" OPTION; do
   case "${OPTION}" in
   l)
-      [[ -f ~/.cache/.installer_msg_log ]] || notifyUserAndExit "There are no logged messages" 0 'dontClear'
-      cat ~/.cache/.installer_msg_log | more
+      [[ -f ~/.cache/darlingarch/.installer_msg_log ]] || notifyUserAndExit "There are no logged messages" 0 'dontClear'
+      cat ~/.cache/darlingarch/.installer_msg_log | more
       exitOrContinue 0 "forceExit"
     ;;
   h)
@@ -314,6 +339,8 @@ configureNetwork
 configureRootPassword
 
 configureGrub
+
+configureUser
 
 showLoadingBar "Finishing up"
 
