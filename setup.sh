@@ -120,7 +120,6 @@ notifyUser()
     sleep ${2:-2}
     [[ "${3}" == "dontClear" ]] || clear
     printf "${CLEAR_ALL_TEXT_STYLES}\n"
-    printf "\n%s%s%s\n" "${NOTIFYCOLOR}" "${1}" "${CLEAR_ALL_TEXT_STYLES}" >> ~/.cache/.installer_msg_log
 }
 
 notifyUserAndExit()
