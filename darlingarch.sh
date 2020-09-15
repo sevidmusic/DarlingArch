@@ -525,9 +525,9 @@ configureTime()
     showBanner "${SCRIPTNAME}${BANNER_MSG_COLOR}: Configure Time"
     [[ -f ~/.cache/darlingarch/.config_time ]] && notifyUser "Time was aleady configured." && return
     notifyUser "Setting timezone" 0 'dontClear'
-#    ln -sf /usr/share/zoneinfo/America/New_York /etc/localtime
+    arch-chroot /mnt ln -sf /usr/share/zoneinfo/America/New_York /etc/localtime || notifyUserAndExit "${WARNINGCOLOR}Failed to set time, you may need to manually ${HIGHLIGHTCOLOR}arch-chroot${WARNINGCOLOR} into the new installation to complete post installation steps manually! Consult the Arch Wiki if you are unsure about this." 0 'dontClear' 1 'forceExit'
     notifyUser "Syncing hardware clock" 0 'dontClear'
-#    hwclock --systohc
+    arch-chroot /mnt hwclock --systohc || notifyUserAndExit "${WARNINGCOLOR}Failed to sync hardware clock, you may need to manually ${HIGHLIGHTCOLOR}arch-chroot${WARNINGCOLOR} into the new installation to complete post installation steps manually! Consult the Arch Wiki if you are unsure about this." 0 'dontClear' 1 'forceExit'
     showLoadingBar "Time is configured, moving on."
     printf "time_already_configured" >> ~/.cache/darlingarch/.config_time
 }
@@ -537,9 +537,9 @@ configureLocale()
     showBanner "Localization"
     [[ -f ~/.cache/darlingarch/.installer_locale ]] && notifyUser "Localization was already configured." && return
     notifyUser "Setting up localization" 0 'dontClear'
-#    sed -i 's/#en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/g' /etc/locale.gen
-#    locale-gen
-#    echo "LANG=en_US.UTF-8" >> /etc/locale.conf
+    arch-chroot /mnt sed -i 's/#en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/g' /etc/locale.gen || notifyUserAndExit "${WARNINGCOLOR}Failed to configure locale. You may need to arch-chroot into the installation manually to perform the remaining post-installation steps." 0 'dontClear' 1
+    arch-chroot /mnt locale-gen || notifyUserAndExit "${WARNINGCOLOR}Failed to configure locale. You may need to arch-chroot into the installation manually to perform the remaining post-installation steps." 0 'dontClear' 1
+    arch-chroot /mnt echo "LANG=en_US.UTF-8" >> /etc/locale.conf || notifyUserAndExit "${WARNINGCOLOR}Failed to configure locale. You may need to arch-chroot into the installation manually to perform the remaining post-installation steps." 0 'dontClear' 1
     showLoadingBar "Localization was configured, moving on"
     printf "" >> ~/.cache/darlingarch/.installer_locale
 }
@@ -554,17 +554,17 @@ configureNetwork()
     read -p "Desired hostname (${WARNINGCOLOR}alphanumeric, all lowercase, no spaces${NOTIFYCOLOR}): " HOST_NAME
     [[ -f /etc/hostname ]] && notifyUser "Deleteing old /etc/hostname file" 0 'dontClear' && rm /etc/hostname
     [[ -f /etc/hosts ]] && notifyUser "Deleteing old /etc/hosts file" 0 'dontClear' && rm /etc/hosts
-#    echo "${HOST_NAME}" >> /etc/hostname
-#    echo "127.0.0.1        localhost" >> /etc/hosts
-#    echo "::1              localhost" >> /etc/hosts
-#    echo "127.0.1.1        ${HOST_NAME}.localdomain ${HOST_NAME}" >> /etc/hosts
+#   arch-chroot /mnt echo "${HOST_NAME}" >> /etc/hostname
+#   arch-chroot /mnt echo "127.0.0.1        localhost" >> /etc/hosts
+#   arch-chroot /mnt echo "::1              localhost" >> /etc/hosts
+#   arch-chroot /mnt echo "127.0.1.1        ${HOST_NAME}.localdomain ${HOST_NAME}" >> /etc/hosts
     notifyUser "Current /etc/hostname file:" 0 'dontClear'
-#    cat /etc/hostname
+#   arch-chroot /mnt cat /etc/hostname
     notifyUser "Current /etc/hosts file:" 0 'dontClear'
-#    cat /etc/hosts
+#  arch-chroot /mnt  cat /etc/hosts
     sleep 3
     notifyUser "Enabling NetworkManager" 0 'dontClear'
-#    systemctl enable NetworkManager
+#  arch-chroot /mnt  systemctl enable NetworkManager
     showLoadingBar "Network is configured, and NetworkManager is enabled, moving on"
     printf "" >> ~/.cache/darlingarch/.installer_network_configured
 }
@@ -574,7 +574,7 @@ configureRootPassword()
     showBanner "Set ${HIGHLIGHTCOLOR}root${BANNER_MSG_COLOR} password"
     [[ -f ~/.cache/darlingarch/.installer_root_pwd ]] && notifyUser "Root password was already set, to reset run: ${HIGHLIGHTCOLOR}passwd" && return
     notifyUser "Setting root password" 0 'dontClear'
-#    passwd
+#  arch-chroot /mnt  passwd
     showLoadingBar "Root password was set, moving on"
     printf "" >> ~/.cache/darlingarch/.installer_root_pwd
 }
@@ -584,13 +584,13 @@ configureGrub()
     showBanner "Install and configure ${HIGHLIGHTCOLOR}grub"
     [[ -f ~/.cache/darlingarch/.installer_grub ]] && notifyUser "Grub was already installed and configured on: ${HIGHLIGHTCOLOR}$(cat ~/.cache/darlingarch/.installer_grub)" && return
     notifyUser "Setting up ${HIGHLIGHTCOLOR}grub${NOTIFYCOLOR} bootloader" 0 'dontClear'
-#    pacman -S grub --noconfirm
+#   arch-chroot /mnt pacman -S grub --noconfirm
     showBanner "Configure Grub | Enter Disk Name | ${HIGHLIGHTCOLOR}User input required"
     notifyUser "Please enter the name of the disk ${DISTRO}${NOTIFYCOLOR} is being installed on. (e.g., ${HIGHLIGHTCOLOR}sdb${NOTIFYCOLOR})" 0 'dontClear'
     showDiskInfo
     read -p "Disk name (e.g., ${HIGHLIGHTCOLOR}sdb${CLEAR_ALL_TEXT_STYLES}): " DISK_NAME
-#    grub-install -v --target=i386-pc "/dev/${DISK_NAME}"
-#    grub-mkconfig -o /boot/grub/grub.cfg
+#   arch-chroot /mnt grub-install -v --target=i386-pc "/dev/${DISK_NAME}"
+#  arch-chroot /mnt  grub-mkconfig -o /boot/grub/grub.cfg
     showLoadingBar "Grub was installed and configured on ${HIGHLIGHTCOLOR}${DISK_NAME}${NOTIFYCOLOR}, moving on"
     printf "${DISK_NAME}" >> ~/.cache/darlingarch/.installer_grub
 }
@@ -603,17 +603,17 @@ configureUser()
     notifyUser "Please enter a username:" 0 'dontClear'
     read -p "Desired user name: " USER_NAME
     showLoadingBar "Creating new user"
-#    useradd -m -U -G wheel,audio,video,optical,storage -s /bin/bash "${USER_NAME}"
+#   arch-chroot /mnt useradd -m -U -G wheel,audio,video,optical,storage -s /bin/bash "${USER_NAME}"
     showBanner "Configure User | Set new user's password | ${HIGHLIGHTCOLOR}User Input Required"
     notifyUser "Please set a password for the new user:" 0 'dontClear'
-#    passwd "${USER_NAME}"
+#   arch-chroot /mnt passwd "${USER_NAME}"
     showLoadingBar "Password was set for new user, moving on"
     showBanner "Configure User | Install and configure sudo"
-#    pacman -S sudo --noconfirm
+#   arch-chroot /mnt pacman -S sudo --noconfirm
     showLoadingBar "${HIGHLIGHTCOLOR}sudo${CLEAR_ALL_TEXT_STYLES} is installed, moving on"
     showBanner "Configure User | Install and configure sudo"
     showLoadingBar "Enableing members of the wheel group to use sudo"
-#    sed -i 's/# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/g' /etc/sudoers
+#   arch-chroot /mnt sed -i 's/# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/g' /etc/sudoers
     showBanner "Configure User | Done"
     showLoadingBar "New user ${USER_NAME} was created, and given sudo privleges, additional changes will need to be made manually, moving on"
     printf "${USER_NAME}" >> ~/.cache/darlingarch/.installer_user
