@@ -484,6 +484,13 @@ moveIntoInstallation()
     notifyUser "${WARNINGCOLOR}If you are certian that everything is in order, you can poweroff, reboot, and begin enjoying your new Arch Installation" 0 'dontClear' 0
 }
 
+performPostInstallation() {
+    showBanner "-- Post-installation --"
+    showLoadingBar "${LB_POST_INSTALL_MSG}"
+    configureFstab
+    moveIntoInstallation
+}
+
 showFlagInfo()
 {
       showLoadingBar "Loading flag info"
@@ -517,127 +524,6 @@ mkCacheDir()
     showBanner "Setup cache directory used by ${SCRIPTNAME}"
     showLoadingBar "Attempting to setup cache directory at: ${HIGHLIGHTCOLOR}${CACHE_DIR}" 'dontClear'
 }
-
-#################### POST CHROOT #########################
-
-configureTime()
-{
-    showBanner "${SCRIPTNAME}${BANNER_MSG_COLOR}: Configure Time"
-    [[ -f ~/.cache/darlingarch/.config_time ]] && notifyUser "Time was aleady configured." && return
-    notifyUser "Setting timezone" 0 'dontClear'
-#    ln -sf /usr/share/zoneinfo/America/New_York /etc/localtime
-    notifyUser "Syncing hardware clock" 0 'dontClear'
-#    hwclock --systohc
-    showLoadingBar "Time is configured, moving on."
-    printf "time_already_configured" >> ~/.cache/darlingarch/.config_time
-}
-
-configureLocale()
-{
-    showBanner "Localization"
-    [[ -f ~/.cache/darlingarch/.installer_locale ]] && notifyUser "Localization was already configured." && return
-    notifyUser "Setting up localization" 0 'dontClear'
-#    sed -i 's/#en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/g' /etc/locale.gen
-#    locale-gen
-#    echo "LANG=en_US.UTF-8" >> /etc/locale.conf
-    showLoadingBar "Localization was configured, moving on"
-    printf "" >> ~/.cache/darlingarch/.installer_locale
-}
-
-configureNetwork()
-{
-    showBanner "Network Configuration | ${HIGHLIGHTCOLOR}User Input Required"
-    [[ -f ~/.cache/darlingarch/.installer_network_configured ]] && notifyUser "Network was already configured." && return
-    notifyUser "Setting up network" 0 'dontClear'
-    notifyUser "Plese enter the name you wish to assign to you computer, i.e. the hostname:" 0 'dontClear'
-    notifyUser "${WARNINGCOLOR}The hostname MUST be alphanumeric, all lowercase, and contain no spaces, ${SCRIPTNAME}${WARNINGCOLOR} does not validate your input, get this right or your Network configuration will be invalid!" 0 'dontClear'
-    read -p "Desired hostname (${WARNINGCOLOR}alphanumeric, all lowercase, no spaces${NOTIFYCOLOR}): " HOST_NAME
-    [[ -f /etc/hostname ]] && notifyUser "Deleteing old /etc/hostname file" 0 'dontClear' && rm /etc/hostname
-    [[ -f /etc/hosts ]] && notifyUser "Deleteing old /etc/hosts file" 0 'dontClear' && rm /etc/hosts
-#    echo "${HOST_NAME}" >> /etc/hostname
-#    echo "127.0.0.1        localhost" >> /etc/hosts
-#    echo "::1              localhost" >> /etc/hosts
-#    echo "127.0.1.1        ${HOST_NAME}.localdomain ${HOST_NAME}" >> /etc/hosts
-    notifyUser "Current /etc/hostname file:" 0 'dontClear'
-#    cat /etc/hostname
-    notifyUser "Current /etc/hosts file:" 0 'dontClear'
-#    cat /etc/hosts
-    sleep 3
-    notifyUser "Enabling NetworkManager" 0 'dontClear'
-#    systemctl enable NetworkManager
-    showLoadingBar "Network is configured, and NetworkManager is enabled, moving on"
-    printf "" >> ~/.cache/darlingarch/.installer_network_configured
-}
-
-configureRootPassword()
-{
-    showBanner "Set ${HIGHLIGHTCOLOR}root${BANNER_MSG_COLOR} password"
-    [[ -f ~/.cache/darlingarch/.installer_root_pwd ]] && notifyUser "Root password was already set, to reset run: ${HIGHLIGHTCOLOR}passwd" && return
-    notifyUser "Setting root password" 0 'dontClear'
-#    passwd
-    showLoadingBar "Root password was set, moving on"
-    printf "" >> ~/.cache/darlingarch/.installer_root_pwd
-}
-
-configureGrub()
-{
-    showBanner "Install and configure ${HIGHLIGHTCOLOR}grub"
-    [[ -f ~/.cache/darlingarch/.installer_grub ]] && notifyUser "Grub was already installed and configured on: ${HIGHLIGHTCOLOR}$(cat ~/.cache/darlingarch/.installer_grub)" && return
-    notifyUser "Setting up ${HIGHLIGHTCOLOR}grub${NOTIFYCOLOR} bootloader" 0 'dontClear'
-#    pacman -S grub --noconfirm
-    showBanner "Configure Grub | Enter Disk Name | ${HIGHLIGHTCOLOR}User input required"
-    notifyUser "Please enter the name of the disk ${DISTRO}${NOTIFYCOLOR} is being installed on. (e.g., ${HIGHLIGHTCOLOR}sdb${NOTIFYCOLOR})" 0 'dontClear'
-    showDiskInfo
-    read -p "Disk name (e.g., ${HIGHLIGHTCOLOR}sdb${CLEAR_ALL_TEXT_STYLES}): " DISK_NAME
-#    grub-install -v --target=i386-pc "/dev/${DISK_NAME}"
-#    grub-mkconfig -o /boot/grub/grub.cfg
-    showLoadingBar "Grub was installed and configured on ${HIGHLIGHTCOLOR}${DISK_NAME}${NOTIFYCOLOR}, moving on"
-    printf "${DISK_NAME}" >> ~/.cache/darlingarch/.installer_grub
-}
-
-configureUser()
-{
-    [[ -f ~/.cache/darlingarch/.installer_user ]] && showBanner "Configure User" && notifyUser "$(cat ~/.cache/darlingarch/.installer_user)'s account was already configured. Additional changes will need to be made manually." && return
-    notifyUser "" 0 'dontClear'
-    showBanner "Configure User | ${HIGHLIGHTCOLOR}User input required"
-    notifyUser "Please enter a username:" 0 'dontClear'
-    read -p "Desired user name: " USER_NAME
-    showLoadingBar "Creating new user"
-#    useradd -m -U -G wheel,audio,video,optical,storage -s /bin/bash "${USER_NAME}"
-    showBanner "Configure User | Set new user's password | ${HIGHLIGHTCOLOR}User Input Required"
-    notifyUser "Please set a password for the new user:" 0 'dontClear'
-#    passwd "${USER_NAME}"
-    showLoadingBar "Password was set for new user, moving on"
-    showBanner "Configure User | Install and configure sudo"
-#    pacman -S sudo --noconfirm
-    showLoadingBar "${HIGHLIGHTCOLOR}sudo${CLEAR_ALL_TEXT_STYLES} is installed, moving on"
-    showBanner "Configure User | Install and configure sudo"
-    showLoadingBar "Enableing members of the wheel group to use sudo"
-#    sed -i 's/# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/g' /etc/sudoers
-    showBanner "Configure User | Done"
-    showLoadingBar "New user ${USER_NAME} was created, and given sudo privleges, additional changes will need to be made manually, moving on"
-    printf "${USER_NAME}" >> ~/.cache/darlingarch/.installer_user
-}
-
-performPostInstallation() {
-    showBanner "-- Post-installation --"
-    showLoadingBar "${LB_POST_INSTALL_MSG}"
-    configureFstab
-#    moveIntoInstallation
-    configureTime
-
-    configureLocale
-
-    configureNetwork
-
-    configureRootPassword
-
-    configureGrub
-
-    configureUser
-}
-
-
 ########################## PROGRAM #######################
 
 clear
@@ -691,11 +577,8 @@ while getopts ":Cslp:h" OPTION; do
   esac
 done
 clear
-
 performPreInsallation
-
+# NOTE: Use a file to determine which packages are installed in addition to base. i.e. package.list
 performInstallation
-
 performPostInstallation
-
 

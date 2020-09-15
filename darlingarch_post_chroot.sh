@@ -188,6 +188,26 @@ showHelpMsg()
     showLoadingBar "Exiting installer"
 }
 
+showDiskListing()
+{
+    fdisk -l | grep 'dev' | awk "/dev.*/{i++}i==${1}{print; exit}"
+}
+
+showDiskInfo()
+{
+    local _sdi_limit _sdi_inc _sdi_listing
+    _sdi_limit="$(fdisk -l | grep 'dev' | wc -l)"
+    _sdi_inc=1
+    notifyUser "The following is an overview of the available disks, and their respective partitions." 0 'dontClear'
+    while [[ "${_sdi_inc}" -le "${_sdi_limit}" ]]
+    do
+        _sdi_listing="$(showDiskListing $_sdi_inc)"
+        notifyUser "${_sdi_listing/Disk/${HIGHLIGHTCOLOR}Disk}" 0 'dontClear'
+        _sdi_inc=$(( $_sdi_inc + 1 ))
+    done
+    sleep 5
+}
+
 configureTime()
 {
     showBanner "${SCRIPTNAME}${BANNER_MSG_COLOR}: Configure Time"
@@ -247,26 +267,6 @@ configureRootPassword()
     printf "" >> ~/.cache/darlingarch/.installer_root_pwd
 }
 
-showDiskListing()
-{
-    fdisk -l | grep 'dev' | awk "/dev.*/{i++}i==${1}{print; exit}"
-}
-
-showDiskInfo()
-{
-    local _sdi_limit _sdi_inc _sdi_listing
-    _sdi_limit="$(fdisk -l | grep 'dev' | wc -l)"
-    _sdi_inc=1
-    notifyUser "The following is an overview of the available disks, and their respective partitions." 0 'dontClear'
-    while [[ "${_sdi_inc}" -le "${_sdi_limit}" ]]
-    do
-        _sdi_listing="$(showDiskListing $_sdi_inc)"
-        notifyUser "${_sdi_listing/Disk/${HIGHLIGHTCOLOR}Disk}" 0 'dontClear'
-        _sdi_inc=$(( $_sdi_inc + 1 ))
-    done
-    sleep 5
-}
-
 configureGrub()
 {
     showBanner "Install and configure ${HIGHLIGHTCOLOR}grub"
@@ -282,7 +282,6 @@ configureGrub()
     showLoadingBar "Grub was installed and configured on ${HIGHLIGHTCOLOR}${DISK_NAME}${NOTIFYCOLOR}, moving on"
     printf "${DISK_NAME}" >> ~/.cache/darlingarch/.installer_grub
 }
-
 
 configureUser()
 {
