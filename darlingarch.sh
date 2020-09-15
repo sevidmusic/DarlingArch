@@ -152,7 +152,7 @@ initMessages() {
     HELP_MSG_WELCOME3="Feel free to modify the script to suit your needs."
     HELP_MSG_WELCOME4="-Sevi D | https://github.com/sevidmusic | sdmwebsdm@gmail.com"
     LB_PRE_INSTALL_MSG='Pre-installation will begin in a moment'
-    LB_INSTALL_MSG="Installation of ${DISTRO}${NOTIFYCOLOR} will begin in a moment"
+    LB_INSTALL_MSG="Installation of ${DISTRO}${CLEAR_ALL_TEXT_STYLES} will begin in a moment"
     LB_POST_INSTALL_MSG='Post-installation will being in a moment'
     PWD_IS_ALREADY_SET="Root password was already set, to reset run: ${HIGHLIGHTCOLOR}passwd${CLEAR_ALL_TEXT_STYLES}"
     PLS_SET_PWD="Please set the root password:"
@@ -539,7 +539,7 @@ configureLocale()
     notifyUser "Setting up localization" 0 'dontClear'
     arch-chroot /mnt sed -i 's/#en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/g' /etc/locale.gen || notifyUserAndExit "${WARNINGCOLOR}Failed to configure locale. You may need to arch-chroot into the installation manually to perform the remaining post-installation steps." 0 'dontClear' 1
     arch-chroot /mnt locale-gen || notifyUserAndExit "${WARNINGCOLOR}Failed to configure locale. You may need to arch-chroot into the installation manually to perform the remaining post-installation steps." 0 'dontClear' 1
-    arch-chroot /mnt echo "LANG=en_US.UTF-8" >> /etc/locale.conf || notifyUserAndExit "${WARNINGCOLOR}Failed to configure locale. You may need to arch-chroot into the installation manually to perform the remaining post-installation steps." 0 'dontClear' 1
+    echo "LANG=en_US.UTF-8" > /mnt/etc/locale.conf || notifyUserAndExit "${WARNINGCOLOR}Failed to configure locale. You may need to arch-chroot into the installation manually to perform the remaining post-installation steps." 0 'dontClear' 1
     showLoadingBar "Localization was configured, moving on"
     printf "locale_is_configured_forInstallation" >> ~/.cache/darlingarch/.config_locale
 }
@@ -552,12 +552,12 @@ configureNetwork()
     notifyUser "Plese enter the name you wish to assign to you computer, i.e. the hostname:" 0 'dontClear'
     notifyUser "${WARNINGCOLOR}The hostname MUST be alphanumeric, all lowercase, and contain no spaces, ${SCRIPTNAME}${WARNINGCOLOR} does not validate your input, get this right or your Network configuration will be invalid!" 0 'dontClear'
     read -p "Desired hostname (${WARNINGCOLOR}alphanumeric, all lowercase, no spaces${NOTIFYCOLOR}): " HOST_NAME
-    [[ -f /etc/hostname ]] && notifyUser "Deleteing old /etc/hostname file" 0 'dontClear' && arch-chroot /mnt rm /etc/hostname
-    [[ -f /etc/hosts ]] && notifyUser "Deleteing old /etc/hosts file" 0 'dontClear' && arch-chroot /mnt rm /etc/hosts
-    arch-chroot /mnt echo "${HOST_NAME}" >> /etc/hostname
-    arch-chroot /mnt echo "127.0.0.1        localhost" >> /etc/hosts
-    arch-chroot /mnt echo "::1              localhost" >> /etc/hosts
-    arch-chroot /mnt echo "127.0.1.1        ${HOST_NAME}.localdomain ${HOST_NAME}" >> /etc/hosts
+    [[ -f /mnt/etc/hostname ]] && notifyUser "Deleteing old /etc/hostname file" 0 'dontClear' && rm /mnt/etc/hostname
+    [[ -f /mnt/etc/hosts ]] && notifyUser "Deleteing old /etc/hosts file" 0 'dontClear' && rm /mnt/etc/hosts
+    echo "${HOST_NAME}" >> /mnt/etc/hostname
+    echo "127.0.0.1        localhost" >> /mnt/etc/hosts
+    echo "::1              localhost" >> /mnt/etc/hosts
+    echo "127.0.1.1        ${HOST_NAME}.localdomain ${HOST_NAME}" >> /mnt/etc/hosts
     notifyUser "Current /etc/hostname file:" 0 'dontClear'
     arch-chroot /mnt cat /etc/hostname
     notifyUser "Current /etc/hosts file:" 0 'dontClear'
@@ -595,9 +595,16 @@ configureGrub()
     printf "${DISK_NAME}" >> ~/.cache/darlingarch/.config_grub
 }
 
+showUserAlreadyConfiguredMsg()
+{
+    showBanner "Configure User"
+    notifyUser "Initial user account was already created and configured for user $(cat ~/.cache/darlingarch/.config_user)." 0 'dontClear'
+    notifyUser "Additional changes to $(cat ~/.cache/darlingarch/.config_user)'s account will have to be made manually." 0 'dontClear'
+    notifyUser "Also, any additional user accounts will need to be created and configured manually. Consult the Arch Wiki if you are unsure about how to do this." 0 'dontClear'
+}
 configureUser()
 {
-    [[ -f ~/.cache/darlingarch/.config_user ]] && showBanner "Configure User" && notifyUser "$(cat ~/.cache/darlingarch/.config_user)'s account was already configured. Additional changes will need to be made manually." && return
+    [[ -f ~/.cache/darlingarch/.config_user ]] && showUserAlreadyConfiguredMsg && return
     notifyUser "" 0 'dontClear'
     showBanner "Configure User | ${HIGHLIGHTCOLOR}User input required"
     notifyUser "Please enter a username:" 0 'dontClear'
