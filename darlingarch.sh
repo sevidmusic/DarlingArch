@@ -365,9 +365,12 @@ mountFilesystem()
 {
     showBanner "Pre-installtion: Mount filesystem | User Input Required"
     [[ -f "${CACHE_DIR}/.installer_filesystem_mounted" ]] && notifyUser "Filesystem was already mounted from $(cat ${CACHE_DIR}/.installer_filesystem_mounted)" && return
-    notifyUser "Please specify the name of the partition you created for ${HIGHLIGHTCOLOR}root${NOTIFYCOLOR}:" 0 'dontClear'
-    showDiskModificationWarning
-    read -p "${HIGHLIGHTCOLOR}Root${CLEAR_ALL_TEXT_STYLES} Partion Name (e.g.${HIGHLIGHTCOLOR}/dev/sdb2${CLEAR_ALL_TEXT_STYLES}):" ROOT_PARTITION_NAME
+    if [ -z "${ROOT_PARTITION_NAME}" ]
+    then
+        notifyUser "Please specify the name of the partition you created for ${HIGHLIGHTCOLOR}root${NOTIFYCOLOR}:" 0 'dontClear'
+        showDiskModificationWarning
+        read -p "${HIGHLIGHTCOLOR}Root${CLEAR_ALL_TEXT_STYLES} Partion Name (e.g.${HIGHLIGHTCOLOR}/dev/sdb2${CLEAR_ALL_TEXT_STYLES}):" ROOT_PARTITION_NAME
+    fi
     showLoadingBar "Mounting root filesystem from ${ROOT_PARTITION_NAME} "
     showBanner "Pre-installtion: Mount filesystem"
     mount "${ROOT_PARTITION_NAME}" /mnt || notifyUserAndExit "${WARNINGCOLOR}Failed to mount ${HIGHLIGHTCOLOR}${ROOT_PARTITION_NAME}${WARNINGCOLOR}, please re-run ${SCRIPTNAME}${WARNINGCOLOR} and try again." 0 'dontClear' 1
