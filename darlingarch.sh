@@ -705,4 +705,5 @@ performInstallation
 
 performPostInstallation
 
+notifyUserAndExit "Installation is complete, you should now be able to ${HIGHLIGHTCOLOR}poweroff${NOTIFYCOLOR} your computer, ${HIGHLIGHTCOLOR}remove the installation media${NOTIFYCOLOR}, ${HIGHLIGHTCOLOR}turn the computer back on${NOTIFYCOLOR}, and begin enjoying your new ${GREEN_FG_COLOR}Arch Linux${NOTIFYCOLOR} installation." 0  'dontClear' 0
 
