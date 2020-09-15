@@ -350,9 +350,7 @@ configureGrub
 
 configureUser
 
-showLoadingBar "Finishing up"
+showBanner "Post installation steps complete | You can now ${HIGHLIGHTCOLOR}exit"
 
-showBanner "Finishing up"
-
-notifyUserAndExit "If no errors occured, then you can safely ${HIGHLIGHTCOLOR}exit${NOTIFYCOLOR}, ${HIGHLIGHTCOLOR}umount ${DISK_NAME:-DISKNAME}${NOTIFYCOLOR}, ${HIGHLIGHTCOLOR}poweroff${NOTIFYCOLOR} the computer, ${HIGHLIGHTCOLOR}remove the installation media${NOTIFYCOLOR}, and reboot into your new ${DISTRO}${NOTIFYCOLOR} installation." 5
+notifyUserAndExit "If no errors occured, then you can safely ${HIGHLIGHTCOLOR}exit${NOTIFYCOLOR}, ${HIGHLIGHTCOLOR}umount ${DISK_NAME:-DISKNAME}${NOTIFYCOLOR}, ${HIGHLIGHTCOLOR}poweroff${NOTIFYCOLOR} the computer, ${HIGHLIGHTCOLOR}remove the installation media${NOTIFYCOLOR}, and reboot into your new ${DISTRO}${NOTIFYCOLOR} installation." 0 'dontClear' 0
 
