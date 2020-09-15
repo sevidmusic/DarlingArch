@@ -552,8 +552,8 @@ configureNetwork()
     notifyUser "Plese enter the name you wish to assign to you computer, i.e. the hostname:" 0 'dontClear'
     notifyUser "${WARNINGCOLOR}The hostname MUST be alphanumeric, all lowercase, and contain no spaces, ${SCRIPTNAME}${WARNINGCOLOR} does not validate your input, get this right or your Network configuration will be invalid!" 0 'dontClear'
     read -p "Desired hostname (${WARNINGCOLOR}alphanumeric, all lowercase, no spaces${NOTIFYCOLOR}): " HOST_NAME
-    [[ -f /etc/hostname ]] && notifyUser "Deleteing old /etc/hostname file" 0 'dontClear' && rm /etc/hostname
-    [[ -f /etc/hosts ]] && notifyUser "Deleteing old /etc/hosts file" 0 'dontClear' && rm /etc/hosts
+    [[ -f /etc/hostname ]] && notifyUser "Deleteing old /etc/hostname file" 0 'dontClear' && arch-chroot /mnt rm /etc/hostname
+    [[ -f /etc/hosts ]] && notifyUser "Deleteing old /etc/hosts file" 0 'dontClear' && arch-chroot /mnt rm /etc/hosts
     arch-chroot /mnt echo "${HOST_NAME}" >> /etc/hostname
     arch-chroot /mnt echo "127.0.0.1        localhost" >> /etc/hosts
     arch-chroot /mnt echo "::1              localhost" >> /etc/hosts
