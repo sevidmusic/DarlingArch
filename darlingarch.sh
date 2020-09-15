@@ -70,6 +70,7 @@ initTextStyles() {
 
 initVars()
 {
+    CACHE_DIR=~/.cache/darlingarch
     DEFAULT_PACKAGE_FILE="$(pwd)/pacstrap.dap"
     PACKAGE_FILE="${DEFAULT_PACKAGE_FILE}"
 }
@@ -126,7 +127,7 @@ notifyUser()
     sleep ${2:-2}
     [[ "${3}" == "dontClear" ]] || clear
     printf "${CLEAR_ALL_TEXT_STYLES}\n"
-    printf "\n%s%s%s\n" "${NOTIFYCOLOR}" "${1}" "${CLEAR_ALL_TEXT_STYLES}" >> ~/.cache/.installer_msg_log
+    printf "\n%s%s%s\n" "${NOTIFYCOLOR}" "${1}" "${CLEAR_ALL_TEXT_STYLES}" >> "${CACHE_DIR}/.installer_msg_log"
 }
 
 notifyUserAndExit()
@@ -243,36 +244,36 @@ showTimeSettings()
 installWhich()
 {
     showBanner "Pre-installation: Installing which"
-    [[ -f ~/.cache/.installer_which ]] && notifyUser "${HIGHLIGHTCOLOR}which${CLEAR_ALL_TEXT_STYLES}${NOTIFYCOLOR} is already installed: ${HIGHLIGHTCOLOR}$(which which)${CLEAR_ALL_TEXT_STYLES}" && return
+    [[ -f "${CACHE_DIR}/.installer_which" ]] && notifyUser "${HIGHLIGHTCOLOR}which${CLEAR_ALL_TEXT_STYLES}${NOTIFYCOLOR} is already installed: ${HIGHLIGHTCOLOR}$(which which)${CLEAR_ALL_TEXT_STYLES}" && return
     showLoadingBar "Installing \"which\" so program locations can be determined"
     pacman -S which --noconfirm
     notifyUser "${HIGHLIGHTCOLOR}which${NOTIFYCOLOR} is now installed on the installation media, this ${WARNINGCOLOR}will NOT persist${NOTIFYCOLOR} onto the actual installation." 0 'dontClear'
     showLoadingBar "'which' is installed, moving on"
-    printf "which_already_installed" >> ~/.cache/.installer_which
+    printf "which_already_installed" >> "${CACHE_DIR}/.installer_which"
 }
 
 installReflector()
 {
     showBanner "Pre-installation: Installing reflector"
-    [[ -f ~/.cache/.installer_reflector ]] && notifyUser "${HIGHLIGHTCOLOR}reflector${CLEAR_ALL_TEXT_STYLES}${NOTIFYCOLOR} is already installed: ${HIGHLIGHTCOLOR}$(which reflector)${CLEAR_ALL_TEXT_STYLES}" && return
+    [[ -f "${CACHE_DIR}/.installer_reflector" ]] && notifyUser "${HIGHLIGHTCOLOR}reflector${CLEAR_ALL_TEXT_STYLES}${NOTIFYCOLOR} is already installed: ${HIGHLIGHTCOLOR}$(which reflector)${CLEAR_ALL_TEXT_STYLES}" && return
     showLoadingBar "Installing \"reflector\" to automate configuration of mirrors used by ${HIGHLIGHTCOLOR}pacman${CLEAR_ALL_TEXT_STYLES}"
     pacman -S reflector --noconfirm
     notifyUser "${HIGHLIGHTCOLOR}reflector${NOTIFYCOLOR} is now installed on the installation media, this ${WARNINGCOLOR}will NOT persist${NOTIFYCOLOR} onto the actual installation." 0 'dontClear'
     showLoadingBar "'reflector' is installed, moving on"
-    printf "reflector_already_installed" >> ~/.cache/.installer_reflector
+    printf "reflector_already_installed" >> "${CACHE_DIR}/.installer_reflector"
 }
 
 
 setRootPassword()
 {
     showBanner "Pre-installation: Set root password for installation media"
-    [[ -f ~/.cache/.installer_pwd ]] && notifyUser "${PWD_IS_ALREADY_SET}" && return
+    [[ -f "${CACHE_DIR}/.installer_pwd" ]] && notifyUser "${PWD_IS_ALREADY_SET}" && return
     notifyUser "${PLS_SET_PWD}" 0 'dontClear'
     passwd || notifyUserAndExit "${PWD_ERROR_OCCURED}" 0 'dontClear' 1
     notifyUser "${PWD_SET_FOR_ISO_WONT_PERSIST}" 0 'dontClear'
     notifyUser "${PWD_SET_FOR_ISO_IS_PWD_FOR_SSH}" 0 'dontClear'
     showLoadingBar "Root password for installation media is set, moving on"
-    printf "password_already_set" >> ~/.cache/.installer_pwd
+    printf "password_already_set" >> "${CACHE_DIR}/.installer_pwd"
 }
 
 startSSH()
@@ -301,19 +302,19 @@ installPKGSRequiredByInstaller()
 syncInstallationMediaTime()
 {
     showBanner "Pre-installation: Sync installtion media's time"
-    [[ -f ~/.cache/.installer_im_time_sync ]] && notifyUser "Installation media time is already synced:" 0 'dontClear' && showTimeSettings && clear && return
+    [[ -f "${CACHE_DIR}/.installer_im_time_sync" ]] && notifyUser "Installation media time is already synced:" 0 'dontClear' && showTimeSettings && clear && return
     showLoadingBar "Syncing time settings for installation media" 'dontClear'
     timedatectl set-ntp true || notifyUser "Time seetinggs for installation media were not synced, please re-run ${SCRIPTNAME}" 0 'dontClear'
     notifyUser "Time settings have been updated for installation media:" 2 'dontClear'
     showTimeSettings
     showLoadingBar "Time settings synced for isntallation media, moving on"
-    printf "installation_media_time_already_synced" >> ~/.cache/.installer_im_time_sync
+    printf "installation_media_time_already_synced" >> "${CACHE_DIR}/.installer_im_time_sync"
 }
 
 partitionDisk()
 {
     showBanner "Pre-installtion: Partition disk"
-    [[ -f ~/.cache/.installer_cfdisk ]] && notifyUser "Disks were already partitioned with ${HIGHLIGHTCOLOR}cfdisk${NOTIFYCOLOR}, to make additional changes run cfdisk again manually." 0 'dontClear' && showDiskInfo && return
+    [[ -f "${CACHE_DIR}/.installer_cfdisk" ]] && notifyUser "Disks were already partitioned with ${HIGHLIGHTCOLOR}cfdisk${NOTIFYCOLOR}, to make additional changes run cfdisk again manually." 0 'dontClear' && showDiskInfo && return
     notifyUser "In a moment, cfdisk will start so you can partition the disk. This step is really important, so get it right." 0 'dontClear'
     notifyUser "You will want to partition the disk as follows: (Remember, ${SCRIPTNAME}${NOTIFYCOLOR} is designed to install Arch on an ext4 filesystem)" 0 'dontClear'
     notifyUser "Create one partition for SWAP, size should no more than double your available RAM, and at least as much as available RAM." 0 'dontClear'
@@ -326,14 +327,14 @@ partitionDisk()
     cfdisk "/dev/${DISK_NAME}" || notifyUserAndExit "${WARNINGCOLOR}Warning: ${HIGHLIGHTCOLOR}cfdisk${WARNINGCOLOR} failed to start, please make sure it is installed then re-run ${SCRIPTNAME}" 0 'dontClear' 1
     clear && showBanner "Pre-installation: Partion disks | Complete | To make additional changes run ${HIGHLIGHTCOLOR}cfdisk${NOTIFYCOLOR} manually" && notifyUser "Please review the partions you just created, if everything looks good re-run ${SCRIPTNAME}${NOTIFYCOLOR} to continue the installtion." 0 'dontClear'
     showDiskInfo
-    printf "disks_already_partitioned_to_partition_again_run_cfdisk_manually" >> ~/.cache/.installer_cfdisk
+    printf "disks_already_partitioned_to_partition_again_run_cfdisk_manually" >> "${CACHE_DIR}/.installer_cfdisk"
     exitOrContinue 0
 }
 
 makeExt4Filesystem()
 {
     showBanner "Pre-installtion: Make EXT4 filesystem | User Input Required"
-    [[ -f ~/.cache/.installer_filesystemExt4 ]] && notifyUser "The filesystem was already created on $(cat ~/.cache/.installer_filesystemExt4)" && return
+    [[ -f "${CACHE_DIR}/.installer_filesystemExt4" ]] && notifyUser "The filesystem was already created on $(cat ${CACHE_DIR}/.installer_filesystemExt4)" && return
     notifyUser "Please specify the name of the partition you created for ${HIGHLIGHTCOLOR}root${NOTIFYCOLOR}:" 0 'dontClear'
     showDiskModificationWarning
     read -p "${HIGHLIGHTCOLOR}Root${CLEAR_ALL_TEXT_STYLES} Partion Name (e.g.${HIGHLIGHTCOLOR}/dev/sdb2${NOTIFYCOLOR}):${CLEAR_ALL_TEXT_STYLES}" ROOT_PARTITION_NAME
@@ -342,13 +343,13 @@ makeExt4Filesystem()
     mkfs.ext4 "${ROOT_PARTITION_NAME}" || notifyUserAndExit "${WARNINGCOLOR}The filesystem could not be created on ${HIGHLIGHTCOLOR}${ROOT_PARTITION_NAME}" 0 'dontClear' 1
     notifyUser "The filesystem was created successfully" 0 'dontClear'
     showLoadingBar "Ext4 filesystem created, moving on"
-    printf "${ROOT_PARTITION_NAME}" >> ~/.cache/.installer_filesystemExt4
+    printf "${ROOT_PARTITION_NAME}" >> "${CACHE_DIR}/.installer_filesystemExt4"
 }
 
 enableSwap()
 {
     showBanner "Pre-installtion: Enable SWAP | User Input Required"
-    [[ -f ~/.cache/.installer_swap_enabled ]] && notifyUser "SWAP was already created and enabled on $(cat ~/.cache/.installer_swap_enabled)" && return
+    [[ -f "${CACHE_DIR}/.installer_swap_enabled" ]] && notifyUser "SWAP was already created and enabled on $(cat ${CACHE_DIR}/.installer_swap_enabled)" && return
     notifyUser "Please specify the name of the partition you created for ${HIGHLIGHTCOLOR}SWAP${NOTIFYCOLOR}:" 0 'dontClear'
     showDiskModificationWarning
     read -p "${HIGHLIGHTCOLOR}SWAP${CLEAR_ALL_TEXT_STYLES} Partion Name (e.g.${HIGHLIGHTCOLOR}/dev/sdb1${CLEAR_ALL_TEXT_STYLES}):" SWAP_PARTITION_NAME
@@ -357,13 +358,13 @@ enableSwap()
     mkswap "${SWAP_PARTITION_NAME}" || notifyUserAndExit "${WARNINGCOLOR}Failed to make SWAP on ${HIGHLIGHTCOLOR}${SWAP_PARTITION_NAME}" 0 'dontClear' 1
     swapon "${SWAP_PARTITION_NAME}" || notifyUserAndExit "${WARNINGCOLOR}Failed to turn on SWAP device ${HIGHLIGHTCOLOR}${SWAP_PARTITION_NAME}" 0 'dontClear' 1
     notifyUser "SWAP was created and enabled successfully"
-    printf "${SWAP_PARTITION_NAME}" >> ~/.cache/.installer_swap_enabled
+    printf "${SWAP_PARTITION_NAME}" >> "${CACHE_DIR}/.installer_swap_enabled"
 }
 
 mountFilesystem()
 {
     showBanner "Pre-installtion: Mount filesystem | User Input Required"
-    [[ -f ~/.cache/.installer_filesystem_mounted ]] && notifyUser "Filesystem was already mounted from $(cat ~/.cache/.installer_filesystem_mounted)" && return
+    [[ -f "${CACHE_DIR}/.installer_filesystem_mounted" ]] && notifyUser "Filesystem was already mounted from $(cat ${CACHE_DIR}/.installer_filesystem_mounted)" && return
     notifyUser "Please specify the name of the partition you created for ${HIGHLIGHTCOLOR}root${NOTIFYCOLOR}:" 0 'dontClear'
     showDiskModificationWarning
     read -p "${HIGHLIGHTCOLOR}Root${CLEAR_ALL_TEXT_STYLES} Partion Name (e.g.${HIGHLIGHTCOLOR}/dev/sdb2${CLEAR_ALL_TEXT_STYLES}):" ROOT_PARTITION_NAME
@@ -372,20 +373,20 @@ mountFilesystem()
     mount "${ROOT_PARTITION_NAME}" /mnt || notifyUserAndExit "${WARNINGCOLOR}Failed to mount ${HIGHLIGHTCOLOR}${ROOT_PARTITION_NAME}${WARNINGCOLOR}, please re-run ${SCRIPTNAME}${WARNINGCOLOR} and try again." 0 'dontClear' 1
     notifyUser "Filesystem was mounted successfully at /mnt" 0 'dontClear'
     showLoadingBar "Filesystem mounted, moving on"
-    printf "${ROOT_PARTITION_NAME}" >> ~/.cache/.installer_filesystem_mounted
+    printf "${ROOT_PARTITION_NAME}" >> "${CACHE_DIR}/.installer_filesystem_mounted"
 }
 
 updateMirrors()
 {
     showBanner "Pre-installtion: Configure mirrors used by ${HIGHLIGHTCOLOR}pacman${BANNER_MSG_COLOR} with ${HIGHLIGHTCOLOR}reflector"
-    [[ -f ~/.cache/.installer_mirrors_are_up_to_date ]] && notifyUser "The mirrors used by ${HIGHLIGHTCOLOR}pacman${NOTIFYCOLOR} are already configured and up to date." && return
+    [[ -f "${CACHE_DIR}/.installer_mirrors_are_up_to_date" ]] && notifyUser "The mirrors used by ${HIGHLIGHTCOLOR}pacman${NOTIFYCOLOR} are already configured and up to date." && return
     notifyUser "${WARNINGCOLOR}--    This may take awhile, DO NOT QUIT TILL THIS STEP IS COMPLETE    --" 0 'dontClear'
     # NOTE: To get a list of countries run: reflector --list-countries
     reflector -c "United States" -a 5 --sort rate --save /etc/pacman.d/mirrorlist || notifyUserAndExit "${HIGHLIGHTCOLOR}reflector${WARNINGCOLOR} was not able to configure the mirrors for ${HIGHLIGHTCOLOR}pacman${WARNINGCOLOR}. Please re-run ${SCRIPTNAME}${WARNINGCOLOR}. If problem persists try re-installing ${HIGHLIGHTCOLOR}reflector${WARNINGCOLOR} with ${HIGHLIGHTCOLOR}pacman -Syy reflector" 0 'dontClear' 1
     pacman -Syy || notifyUserAndExit "${WARNINGCOLOR}mirrors could not be updated for ${HIGHLIGHTCOLOR}pacman${WARNINGCOLOR}. Either re-run ${SCRIPTNAME}${WARNINGCOLOR} or manually run ${HIGHLIGHTCOLOR}pacman -Syy" 1 'dontClear' 1
     notifyUser "Mirrors were configured and updated succesffully." 0 'dontClear'
     showLoadingBar "Mirrors are up to date, moving on"
-    printf "mirrors_are_up_to_date" >> ~/.cache/.installer_mirrors_are_up_to_date
+    printf "mirrors_are_up_to_date" >> "${CACHE_DIR}/.installer_mirrors_are_up_to_date"
 }
 
 performPreInsallation() {
@@ -436,13 +437,13 @@ validatePacstrapDapFile()
 runPacstrap()
 {
     showBanner "Installtion: Run ${HIGHLIGHTCOLOR}pacstrap"
-    [[ -f ~/.cache/.installer_pacstrap_already_run ]] && notifyUser "${HIGHLIGHTCOLOR}pacstrap${NOTIFYCOLOR} already ran." && return
+    [[ -f "${CACHE_DIR}/.installer_pacstrap_already_run" ]] && notifyUser "${HIGHLIGHTCOLOR}pacstrap${NOTIFYCOLOR} already ran." && return
     notifyUser "${WARNINGCOLOR}--    This may take awhile, DO NOT QUIT TILL THIS STEP IS COMPLETE    --" 0 'dontClear'
     validatePacstrapDapFile
     pacstrap /mnt $(< "${PACKAGE_FILE}") || showPacstrapFailedMsg
     notifyUser "${HIGHLIGHTCOLOR}pacstrap${NOTIFYCOLOR} ran successfully, to install additional packages, use ${HIGHLIGHTCOLOR}pacman -S PACKAGE_NAME${NOTIFYCOLOR} once logged into the new Arch installation." 0 'dontClear'
     showLoadingBar "${HIGHLIGHTCOLOR}pacstrap${NOTIFYCOLOR} already ran, moving on"
-    printf "pacstrap_already_ran_use_pacman_to_install_additional_packages_make_sure_your_logged_into_new_installation_via_arch_chroot" >> ~/.cache/.installer_pacstrap_already_run
+    printf "pacstrap_already_ran_use_pacman_to_install_additional_packages_make_sure_your_logged_into_new_installation_via_arch_chroot" >> "${CACHE_DIR}/.installer_pacstrap_already_run"
 }
 
 performInstallation() {
@@ -461,13 +462,13 @@ makeMNTETCDir()
 configureFstab()
 {
     showBanner "Post-installation: Generate fstab"
-    [[ -f ~/.cache/.installer_fstab_generated ]] && notifyUser "fstab was already generated at ${HIGHLIGHTCOLOR}/mnt/etc/fstab" && return
+    [[ -f "${CACHE_DIR}/.installer_fstab_generated" ]] && notifyUser "fstab was already generated at ${HIGHLIGHTCOLOR}/mnt/etc/fstab" && return
     makeMNTETCDir
     genfstab -U -p /mnt >> /mnt/etc/fstab
     [[ -f /mnt/etc/fstab ]] || notifyUserAndExit "${WARNINGCOLOR}Failed to generate fstab. Please re-run ${SCRIPTNAME}${WARNINGCOLOR}. If problem persists you may need to poweroff and start over." 1 'dontClear' 1
     notifyUser "${HIGHLIGHTCOLOR}fstab${NOTIFYCOLOR} was generated successfully at ${HIGHLIGHTCOLOR}/mnt/etc/fstab" 0 'dontClear'
     showLoadingBar "${HIGHLIGHTCOLOR}fstab${NOTIFYCOLOR} was generated at ${HIGHLIGHTCOLOR}/mnt/etc/fstab${NOTIFYCOLOR}, moving on"
-    printf "fstab_generated" >> ~/.cache/.installer_fstab_generated
+    printf "fstab_generated" >> "${CACHE_DIR}/.installer_fstab_generated"
 }
 
 moveIntoInstallation()
@@ -516,12 +517,20 @@ showHelpMsg()
       notifyUser "${HELP_MSG_WELCOME4}" 0 'dontClear'
       showFlagInfo
 }
+
+mkCacheDir()
+{
+    mkdir -p "${CACHE_DIR}" || notifyUserAndExit "${CACHE_DIR} does not exist, and could not be created!" 0 'dontClear' 1
+    showBanner "Setup cache directory used by ${SCRIPTNAME}"
+    showLoadingBar "Attempting to setup cache directory at: ${HIGHLIGHTCOLOR}${CACHE_DIR}" 'dontClear'
+}
 ########################## PROGRAM #######################
 
 clear
 initTextStyles
 initMessages
 initVars
+[[ ! -d "${CACHE_DIR}" ]] && mkCacheDir
 # For a great article on getopts, and other approaches to handling bash arguments:
 # @see https://wiki.bash-hackers.org/howto/getopts_tutorial
 while getopts ":Cslp:h" OPTION; do
@@ -533,8 +542,8 @@ while getopts ":Cslp:h" OPTION; do
       SSH="${OPENSSH}"
     ;;
   l)
-      [[ -f ~/.cache/.installer_msg_log ]] || notifyUserAndExit "There are no logged messages" 0 'dontClear'
-      cat ~/.cache/.installer_msg_log | more
+      [[ -f "${CACHE_DIR}/.installer_msg_log" ]] || notifyUserAndExit "There are no logged messages" 0 'dontClear'
+      cat "${CACHE_DIR}/.installer_msg_log" | more
       exitOrContinue 0 "forceExit"
     ;;
   p)
