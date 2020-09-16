@@ -128,24 +128,14 @@ notifyUserAndExit()
     exitOrContinue "${4:-0}" "${5:-default}"
 }
 
-error_dshells_repo_missing()
-{
-    notifyUserAndExit "Please clone or mv DarlingArch repo to ~/DarlingArch to use this script" 0 'dontClear' 1
-}
-
 initTextStyles
 showLoadingBar "Setup will begin in a moment"
-
-[[ -f ~/DarlingArch/darlingarch.sh ]] || error_dshells_repo_missing
-
 notifyUser "Installing vim, tmux, htop, and rsync" 0 'dontClear'
 pacman -Syy tmux vim htop rsync --noconfirm
 showLoadingBar "vim, tmux, tmux, htop are now installed, moving on"
-
 showLoadingBar "Configuring git"
 git config --global user.name "sevidmusic"
 git config --global user.email "sdmwebsdm&gmail.com"
-
 notifyUser "syncing user configuration files" 0 'dontClear'
 [[ -d /root/.config/htop ]] || mkdir -p /root/.config/htop
 rsync -cv ~/DarlingArch/.autorsync ~/.autorsync && chmod 755 ~/.autorsync
@@ -154,18 +144,12 @@ rsync -cv ~/DarlingArch/.bash_aliases ~/.bash_aliases && chmod 755 ~/.bash_alias
 rsync -cv ~/DarlingArch/.bash_profile ~/.bash_profile && chmod 755 ~/.bash_profile
 rsync -cv ~/DarlingArch/.tmux.conf ~/.tmux.conf && chmod 755 ~/.tmux.conf
 rsync -cv ~/DarlingArch/.vimrc ~/.vimrc && chmod 755 ~/.vimrc
-rsync -cv ~/DarlingArch/darlingarch.sh ~/darlingarch.sh && chmod 755 ~/darlingarch.sh
-rsync -cv ~/DarlingArch/darlingarch_post_chroot.sh ~/darlingarch_post_chroot.sh && chmod 755 ~/darlingarch_post_chroot.sh
-rsync -cv ~/DarlingArch/pacstrap.dap ~/pacstrap.dap && chmod 755 ~/pacstrap.dap
 rsync -cv ~/DarlingArch/htoprc /root/.config/htop/htoprc && chmod 755 /root/.config/htop/htoprc
 notifyUser "The following is a listing of the ~/ directory:" 0 'dontClear'
 ls -a
 showLoadingBar "Configuration files have been synced"
-
 showLoadingBar "Making ~/Code direcotry"
 [[ -d ~/Code ]] || mkdir ~/Code
-
 showLoadingBar "Moving ~/DarlingArch to ~/Code/DarlingArch"
 mv ~/DarlingArch ~/Code/DarlingArch
-
 showLoadingBar "Setup complete"
