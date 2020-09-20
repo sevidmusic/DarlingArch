@@ -26,7 +26,7 @@ installReflector()
 
 updateMirrors()
 {
-    [[ -n "$(command -v reflector)" ]] && installReflector
+    [[ -z "$(command -v reflector)" ]] && installReflector
     notifyUser "Updateing mirror list via ${GREEN_FG_COLOR}reflector" 0 'dontClear'
     notifyUser "${WARNINGCOLOR}--    This may take awhile, DO NOT QUIT TILL THIS STEP IS COMPLETE    --" 0 'dontClear'
     # NOTE: To get a list of countries run: reflector --list-countries
