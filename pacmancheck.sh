@@ -4,6 +4,10 @@ set -o posix
 
 clear && reset
 
+[[ ! -f ./darlingui.sh ]] && printf "\n\n\e[31m darlingui.sh is required for this script to run.\n\n\e[0m" && exit 1
+
+. ./darlingui.sh
+
 showPacmanCheckBanner()
 {
     clear
@@ -13,9 +17,29 @@ showPacmanCheckBanner()
     [[ -z "${1}" ]] || notifyUser "${CLEAR_ALL_TEXT_STYLES}${CYAN_BG_COLOR}${BLACK_FG_COLOR}${1}" 0 'dontClear' 'no_newline'
 }
 
-[[ ! -f ./darlingui.sh ]] && printf "\n\n\e[31m darlingui.sh is required for this script to run.\n\n\e[0m" && exit 1
+installReflector()
+{
+    showLoadingBar "Installing \"reflector\" to automate configuration of mirrors used by ${HIGHLIGHTCOLOR}pacman${CLEAR_ALL_TEXT_STYLES}"
+    sudo pacman -S reflector --noconfirm || notifyUserAndExit "Failed to install reflector" 0 'dontClear' 1
+    showLoadingBar "'reflector' is installed, moving on"
+}
 
-. ./darlingui.sh
+updateMirrors()
+{
+    [[ -n "$(command -v reflector)" ]] && installReflector
+    notifyUser "Updateing mirror list via ${GREEN_FG_COLOR}reflector" 0 'dontClear'
+    notifyUser "${WARNINGCOLOR}--    This may take awhile, DO NOT QUIT TILL THIS STEP IS COMPLETE    --" 0 'dontClear'
+    # NOTE: To get a list of countries run: reflector --list-countries
+    sudo reflector -c "United States" -a 12 --sort rate --save /etc/pacman.d/mirrorlist || notifyUserAndExit "${HIGHLIGHTCOLOR}reflector${WARNINGCOLOR} was not able to configure the mirrors for ${HIGHLIGHTCOLOR}pacman${WARNINGCOLOR}. If problem persists try re-installing ${HIGHLIGHTCOLOR}reflector${WARNINGCOLOR} with ${HIGHLIGHTCOLOR}pacman -Syy reflector" 0 'dontClear' 1
+    sudo pacman -Syy
+    notifyUser "Mirrors were configured and updated succesffully." 0 'dontClear'
+    showLoadingBar "Mirrors are up to date, moving on"
+}
+
+################# PROGRAM ##################
+
+showPacmanCheckBanner "Update mirrors"
+updateMirrors
 
 showPacmanCheckBanner "Packages explicitly installed by user"
 notifyUser "Updating list of ${CLEAR_ALL_TEXT_STYLES}${RED_FG_COLOR}explicitly${NOTIFYCOLOR} installed packages" 0 'dontClear'
@@ -45,9 +69,5 @@ notifyUser "To further manage your .pac* files run ${GREEN_FG_COLOR} pacdiff"
 showPacmanCheckBanner "Finished"
 notifyUser "System checks related to pacman are complete." 0 'dontClear'
 sleep 2
-
-
-[[ -z "$(command -v reflector)" ]] && showLoadingBar "Installing ${GREEN_FG_COLOR}reflector${CLEAR_ALL_TEXT_STYLES} package so mirror list can be properly updated." && sudo pacman -Syy reflector
-
 
 reset
