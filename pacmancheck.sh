@@ -31,6 +31,7 @@ updateMirrors()
     notifyUser "${WARNINGCOLOR}--    This may take awhile, DO NOT QUIT TILL THIS STEP IS COMPLETE    --" 0 'dontClear'
     # NOTE: To get a list of countries run: reflector --list-countries
     sudo reflector -c "United States" -a 12 --sort rate --save /etc/pacman.d/mirrorlist || notifyUserAndExit "${HIGHLIGHTCOLOR}reflector${WARNINGCOLOR} was not able to configure the mirrors for ${HIGHLIGHTCOLOR}pacman${WARNINGCOLOR}. If problem persists try re-installing ${HIGHLIGHTCOLOR}reflector${WARNINGCOLOR} with ${HIGHLIGHTCOLOR}pacman -Syy reflector" 0 'dontClear' 1
+    showLoadingBar "Preparing to sync pacman databases" 'dontClear'
     sudo pacman -Syy
     notifyUser "Mirrors were configured and updated succesffully." 0 'dontClear'
     showLoadingBar "Mirrors are up to date, moving on"
