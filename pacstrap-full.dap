@@ -36,6 +36,10 @@ ttf-opensans
 xorg
 xorg-xinit
 i3
+figlet
+xdg-user-dirs
+reflector
+alsa-utils
 
 
 
