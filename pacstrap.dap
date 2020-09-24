@@ -26,6 +26,10 @@ ttf-fira-mono
 ttf-fira-sans
 xorg
 xorg-xinit
+xterm
+picom
+nitrogen
+awesome
 figlet
 xdg-user-dirs
 reflector
