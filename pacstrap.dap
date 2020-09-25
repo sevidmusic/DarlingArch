@@ -31,6 +31,7 @@ picom
 nitrogen
 xmonad
 xmonad-contrib
+dmenu
 figlet
 xdg-user-dirs
 reflector
