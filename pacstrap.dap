@@ -29,7 +29,8 @@ xorg-xinit
 xterm
 picom
 nitrogen
-awesome
+xmonad
+xmonad-contrib
 figlet
 xdg-user-dirs
 reflector
