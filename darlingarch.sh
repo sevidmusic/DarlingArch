@@ -474,23 +474,18 @@ configureFstab()
     printf "fstab_generated" >> "${CACHE_DIR}/.installer_fstab_generated"
 }
 
-moveIntoInstallation()
-{
-    showBanner "Post-installation: Moving into new Arch Installation"
-    notifyUser "${WARNINGCOLOR}--    DONT QUIT, WERE CLOSE, BUT WE'RE NOT DONE YET    --" 0 'dontClear'
-    notifyUser "${WARNINGCOLOR}You are about to be logged into your new Arch Installation." 0 'dontClear'
-    notifyUser "${WARNINGCOLOR}It is very important that you complete the appropriate post-installation steps laid out on the Arch wiki once you are logged in." 0 'dontClear'
-    notifyUser "${WARNINGCOLOR}${BLACK_FG_COLOR}Not doing so could make your new installation unusable!${CLEAR_ALL_TEXT_STYLES}" 5 'dontClear'
-    showLoadingBar "Logging in"
-    arch-chroot /mnt || notifyUserAndExit "${WARNINGCOLOR}Either you exited immediately, or ${SCRIPTNAME}${WARNINGCOLOR} failed to login to new installation. If it was in fact a filure, you may need to poweroff and start over!" 0 'dontClear' 1
-    notifyUser "${GREEN_BG_COLOR}${BLACK_FG_COLOR}As long as you successfully completed the appropriate post-installation steps laid out by the Arch wiki, then your new Arch installation should be ready to use." 0 'dontClear'
-    notifyUser "${WARNINGCOLOR}If you are certian that everything is in order, you can poweroff, reboot, and begin enjoying your new Arch Installation" 0 'dontClear' 0
-}
-
 showFlagInfo()
 {
       showLoadingBar "Loading flag info"
       showBanner "Help: Flags"
+      # -C
+      notifyUser "The -C flag can be used to force ${SCRIPTNAME}${NOTIFYCOLOR} to perform installation without pausing for user review." 0 'dontClear'
+      notifyUser "    For example: Typically ${SCRIPTNAME}${NOTIFYCOLOR} will exit after the partioning stage to give you an opprutunity" 0 'dontClear'
+      notifyUser "                 to review the partions you created before continuing." 0 'dontClear'
+      notifyUser "                 ${WARNINGCOLOR}If the -C flag is specified, ${SCRIPTNAME}${WARNINGCOLOR} will not exit unless an error occurs" 0 'dontClear'
+      notifyUser "Basically, if you want to have an opputunity to review things at appropriate stage of the installation," 0 'dontClear'
+      notifyUser "then ${WARNINGCOLOR} dont${NOTIFYCOLOR} use the -C flag." 0 'dontClear'
+      notifyUser "If you want ${SCRIPTNAME}${NOTIFYCOLOR} to perform entire installation without stopping, use the -C flag." 0 'dontClear'
       # -p
       notifyUser "The -p flag can be used to specify a package file:" 0 'dontClear'
       notifyUser "${SCRIPTNAME}${HIGHLIGHTCOLOR} -p /path/to/file${CLEAR_ALL_TEXT_STYLES}" 0 'dontClear'
@@ -633,17 +628,11 @@ performPostInstallation() {
     showBanner "-- Post-installation --"
     showLoadingBar "${LB_POST_INSTALL_MSG}"
     configureFstab
-#    moveIntoInstallation
     configureTime
-
     configureLocale
-
     configureNetwork
-
     configureRootPassword
-
     configureGrub
-
     configureUser
 }
 
